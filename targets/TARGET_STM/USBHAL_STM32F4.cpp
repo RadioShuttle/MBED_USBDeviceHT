@@ -1,3 +1,8 @@
+#include "mbed.h"
+#include "PinMap.h"
+
+#ifdef FEATURE_USBSERIAL
+
 /* Copyright (c) 2010-2011 mbed.org, MIT License
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -414,3 +419,5 @@ void USBHAL::usbisr(void) {
 
 
 #endif
+
+#endif // FEATURE_USBSERIAL

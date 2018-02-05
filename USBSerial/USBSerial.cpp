@@ -1,3 +1,8 @@
+#include "mbed.h"
+#include "PinMap.h"
+
+#ifdef FEATURE_USBSERIAL
+
 /* Copyright (c) 2010-2011 mbed.org, MIT License
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
@@ -70,3 +75,5 @@ uint8_t USBSerial::available() {
 bool USBSerial::connected() {
     return terminal_connected;
 }
+
+#endif // FEATURE_USBSERIAL
