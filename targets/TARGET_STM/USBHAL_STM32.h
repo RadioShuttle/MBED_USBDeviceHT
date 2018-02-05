@@ -41,7 +41,8 @@
 #elif defined(TARGET_NUCLEO_F103RB) || \
       defined(TARGET_NUCLEO_F303ZE) || \
       defined(TARGET_DISCO_L053C8) || \
-      defined(TARGET_DISCO_L072CZ_LRWAN1)
+      defined(TARGET_DISCO_L072CZ_LRWAN1) || \
+      defined(TARGET_STM32L4)
 #include "USBHAL_IP_DEVICE.h"
 
 #else

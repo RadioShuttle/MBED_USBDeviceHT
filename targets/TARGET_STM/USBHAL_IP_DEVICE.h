@@ -25,12 +25,18 @@
 #define USBHAL_IRQn  USB_LP_CAN1_RX0_IRQn
 
 #elif defined(TARGET_DISCO_L072CZ_LRWAN1) || \
-      defined(TARGET_DISCO_L053C8)
+      defined(TARGET_DISCO_L053C8) || \
+	  defined(TARGET_STM32L4)
 #define USBHAL_IRQn  USB_IRQn
 
 #else
 #error "USB IRQ is not configured !"
 #endif
+
+#if defined(TARGET_STM32L4) || defined(TARGET_DISCO_L072CZ_LRWAN1)
+extern "C" { void pin_function(PinName pin, int function); }
+#endif
+
 
 #define NB_ENDPOINT  8 // Must be a multiple of 4 bytes
 
@@ -142,6 +148,13 @@ USBHAL::USBHAL(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     pin_function(PA_11, STM_PIN_DATA(STM_MODE_AF_PP, GPIO_NOPULL, GPIO_AF2_USB)); // DM
     pin_function(PA_12, STM_PIN_DATA(STM_MODE_AF_PP, GPIO_NOPULL, GPIO_AF2_USB)); // DP
+    
+#elif defined(TARGET_STM32L4)
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+	pin_function(PA_11, STM_PIN_DATA(STM_MODE_AF_PP, GPIO_NOPULL, GPIO_AF10_USB_FS)); // DM
+	pin_function(PA_12, STM_PIN_DATA(STM_MODE_AF_PP, GPIO_NOPULL, GPIO_AF10_USB_FS)); // DP
+    __HAL_RCC_PWR_CLK_ENABLE();
+    HAL_PWREx_EnableVddUSB();
 
 #else
 #error "USB pins are not configured !"
