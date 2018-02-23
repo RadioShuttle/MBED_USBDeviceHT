@@ -6,12 +6,70 @@
 
 #include <algorithm>
 #include <mbed.h>
-// #include "arch.h"
+#include "PinMap.h"
 
 #ifdef FEATURE_USBSERIAL
-
 #include "USBSerial.h"
 #include "USBSerialBuffered.h"
+
+#ifndef ASSERT
+#define ASSERT          MBED_ASSERT
+#endif
+#ifndef POISONMEM
+static inline void POISONMEM(void *ptr, size_t sz) {
+        memset(ptr, 0x55, sz);
+}
+#endif
+#if defined(__ATOMIC_RELAXED)
+
+#define help_atomic_load_relaxed(ptr) __atomic_load_n((ptr), __ATOMIC_RELAXED)
+
+#define help_atomic_store_relaxed(ptr, val) __atomic_store_n((ptr), (val), __ATOMIC_RELAXED)
+
+#define help_atomic_readclr_relaxed(ptr) __atomic_exchange_n((ptr), 0, __ATOMIC_RELAXED)
+
+#define help_atomic_or_relaxed(ptr, val) __atomic_fetch_or((ptr), (val), __ATOMIC_RELAXED)
+
+#ifdef __cplusplus
+template<typename T> inline bool help_atomic_compare_and_swap(T *ptr, T checkval, T newval) {
+    return __atomic_compare_exchange_n(ptr, &checkval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+}
+#else
+#define help_atomic_compare_and_swap(ptr, checkval, newval) __sync_bool_compare_and_swap((ptr), (checkval), (newval))
+#endif
+
+#define sync_memory(mem) do { \
+    asm volatile("" : "=m" (mem)); \
+    __atomic_thread_fence(__ATOMIC_SEQ_CST); \
+} while (0)
+
+#define irq_barrier() __atomic_signal_fence(__ATOMIC_SEQ_CST)
+
+#define sync_memory_all() do { \
+    asm volatile("" : : : "memory"); \
+    __atomic_thread_fence(__ATOMIC_SEQ_CST); \
+} while (0)
+
+#else // defined(__ATOMIC_RELAXED)
+
+#define help_atomic_load_relaxed(ptr) (*(ptr))
+
+#define help_atomic_store_relaxed(ptr, val) ((void)(*(ptr) = (val)))
+
+#define help_atomic_readclr_relaxed(ptr) __sync_fetch_and_and((ptr), 0)
+
+#define help_atomic_or_relaxed(ptr, val) __sync_fetch_and_or((ptr), (val))
+
+#define help_atomic_compare_and_swap(ptr, checkval, newval) __sync_bool_compare_and_swap((ptr), (checkval), (newval))
+
+#define sync_memory(mem) __sync_synchronize()
+
+#define sync_memory_all() __sync_synchronize()
+
+#define irq_barrier() __sync_synchronize()
+
+#endif
+
 
 USBSerialBuffered::USBSerialBuffered(int MaxBuffSize, uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking)
 : USBSerial(vendor_id, product_id, product_release, connect_blocking)
