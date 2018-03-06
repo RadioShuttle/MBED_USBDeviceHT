@@ -949,9 +949,9 @@ const uint8_t * USBDevice::stringLangidDesc() {
 
 const uint8_t * USBDevice::stringImanufacturerDesc() {
     static const uint8_t stringImanufacturerDescriptor[] = {
-        0x12,                                            /*bLength*/
+        0x14,                                            /*bLength*/
         STRING_DESCRIPTOR,                               /*bDescriptorType 0x03*/
-        'm',0,'b',0,'e',0,'d',0,'.',0,'o',0,'r',0,'g',0, /*bString iManufacturer - mbed.org*/
+        'h',0,'e',0,'l',0,'i',0,'o',0,'s',0,'.',0,'d',0,'e',0,/*bString iManufacturer - helios.de */
     };
     return stringImanufacturerDescriptor;
 }
