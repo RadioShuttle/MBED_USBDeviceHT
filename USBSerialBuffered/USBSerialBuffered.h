@@ -16,7 +16,7 @@
  */
 class USBSerialBuffered : public USBSerial {
 public:
-    USBSerialBuffered(int MaxBuffSize = 128, uint16_t vendor_id = 0x16c0, uint16_t product_id = 0x05e1, uint16_t product_release = 0x0001, bool connect_blocking = true);
+    USBSerialBuffered(int MaxBuffSize = 128, uint16_t vendor_id = 0x16c0, uint16_t product_id = 0x05e1, uint16_t product_release = 0x0001, bool connect_blocking = false);
     ~USBSerialBuffered();
 
     /** sends internally queued but not yet sent data. Is blocking. Must not
