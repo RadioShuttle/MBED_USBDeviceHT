@@ -177,7 +177,7 @@ void USBHAL::setAddress(uint8_t address) {
 
 bool USBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket, uint32_t flags) {
     uint32_t epIndex = EP_ADDR(endpoint);
-    uint32_t type;
+    uint32_t type = 0;
     uint32_t len;
     HAL_StatusTypeDef ret;
     switch (endpoint) {
