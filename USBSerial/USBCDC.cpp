@@ -44,6 +44,8 @@ USBCDC::USBCDC(uint16_t vendor_id, uint16_t product_id, uint16_t product_release
 }
 
 void USBCDC::USBCallback_busReset(void) {
+	if (terminal_connected)
+		sleep_manager_unlock_deep_sleep();
     terminal_connected = false;
 };
 
@@ -71,7 +73,10 @@ bool USBCDC::USBCallback_request(void) {
             case CDC_SET_CONTROL_LINE_STATE:
                 if (transfer->setup.wValue & CLS_DTR) {
                     terminal_connected = true;
+					sleep_manager_lock_deep_sleep();
                 } else {
+					if (terminal_connected)
+						sleep_manager_unlock_deep_sleep();
                     terminal_connected = false;
                 }
                 success = true;
