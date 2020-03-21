@@ -202,6 +202,7 @@ bool USBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket, uint32_t flag
     if (epIndex & 0x80) {
         len = HAL_PCDEx_GetTxFiFo(&hpcd,epIndex & 0x7f);
         MBED_ASSERT(len >= maxPacket);
+        UNUSED(len);
     }
     ret = HAL_PCD_EP_Open(&hpcd, epIndex,  maxPacket, type);
     MBED_ASSERT(ret!=HAL_BUSY);
@@ -225,7 +226,7 @@ void USBHAL::EP0read(void) {
 	 HALPriv->epComplete[EP0OUT] = 2;
 	 ret = HAL_PCD_EP_Receive(&hpcd, epIndex, pBuf, MAX_PACKET_SIZE_EP0 );
 	 MBED_ASSERT(ret!=HAL_BUSY);
-
+	UNUSED(ret);
 }
 
 uint32_t USBHAL::EP0getReadResult(uint8_t *buffer) {
@@ -262,6 +263,7 @@ EP_STATUS USBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
     HALPriv->epComplete[endpoint] = 2;
     ret = HAL_PCD_EP_Receive(&hpcd, epIndex, pBuf, maximumSize);
 	MBED_ASSERT(ret!=HAL_BUSY);
+	UNUSED(ret);
     return EP_PENDING;
 }
 
@@ -309,13 +311,14 @@ void USBHAL::stallEndpoint(uint8_t endpoint) {
 	HALPriv->epComplete[endpoint] = 0;
 	ret = HAL_PCD_EP_SetStall(&hpcd, EP_ADDR(endpoint));
 	MBED_ASSERT(ret!=HAL_BUSY);
+	UNUSED(ret);
 }
 
 void USBHAL::unstallEndpoint(uint8_t endpoint) {
 	HAL_StatusTypeDef ret;
     ret = HAL_PCD_EP_ClrStall(&hpcd, EP_ADDR(endpoint));
 	MBED_ASSERT(ret!=HAL_BUSY);
-
+	UNUSED(ret);
 }
 
 bool USBHAL::getEndpointStallState(uint8_t endpoint) {
