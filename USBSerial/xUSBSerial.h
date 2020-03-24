@@ -16,10 +16,10 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef USBSERIAL_H
-#define USBSERIAL_H
+#ifndef XUSBSERIAL_H
+#define XUSBSERIAL_H
 
-#include "USBCDC.h"
+#include "xUSBCDC.h"
 #include "Stream.h"
 #include "CircBuffer.h"
 #include "Callback.h"
@@ -29,7 +29,7 @@
 *
 * @code
 * #include "mbed.h"
-* #include "USBSerial.h"
+* #include "xUSBSerial.h"
 *
 * //Virtual serial port over USB
 * USBSerial serial;
@@ -44,7 +44,7 @@
 * }
 * @endcode
 */
-class USBSerial: public USBCDC, public Stream {
+class xUSBSerial: public xUSBCDC, public Stream {
 public:
 
     /**
@@ -56,7 +56,7 @@ public:
     * @param connect_blocking define if the connection must be blocked if USB not plugged in
     *
     */
-    USBSerial(uint16_t vendor_id = 0x1f00, uint16_t product_id = 0x2012, uint16_t product_release = 0x0001, bool connect_blocking = true): USBCDC(vendor_id, product_id, product_release, connect_blocking){
+    xUSBSerial(uint16_t vendor_id = 0x1f00, uint16_t product_id = 0x2012, uint16_t product_release = 0x0001, bool connect_blocking = true): xUSBCDC(vendor_id, product_id, product_release, connect_blocking){
         settingsChangedCallback = 0;
     };
 

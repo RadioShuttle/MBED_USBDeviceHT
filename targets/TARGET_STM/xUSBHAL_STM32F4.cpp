@@ -23,11 +23,11 @@
 
 #if defined(TARGET_STM32F4) && !defined(USB_STM_HAL)
 
-#include "USBHAL.h"
-#include "USBRegs_STM32.h"
+#include "xUSBHAL.h"
+#include "xUSBRegs_STM32.h"
 #include "pinmap.h"
 
-USBHAL * USBHAL::instance;
+xUSBHAL * xUSBHAL::instance;
 
 static volatile int epComplete = 0;
 
@@ -37,18 +37,18 @@ static uint32_t rxFifoCount = 0;
 
 static uint32_t setupBuffer[MAX_PACKET_SIZE_EP0 >> 2];
 
-uint32_t USBHAL::endpointReadcore(uint8_t endpoint, uint8_t *buffer) {
+uint32_t xUSBHAL::endpointReadcore(uint8_t endpoint, uint8_t *buffer) {
     return 0;
 }
 
-USBHAL::USBHAL(void) {
+xUSBHAL::xUSBHAL(void) {
     NVIC_DisableIRQ(OTG_FS_IRQn);
-    epCallback[0] = &USBHAL::EP1_OUT_callback;
-    epCallback[1] = &USBHAL::EP1_IN_callback;
-    epCallback[2] = &USBHAL::EP2_OUT_callback;
-    epCallback[3] = &USBHAL::EP2_IN_callback;
-    epCallback[4] = &USBHAL::EP3_OUT_callback;
-    epCallback[5] = &USBHAL::EP3_IN_callback;
+    epCallback[0] = &xUSBHAL::EP1_OUT_callback;
+    epCallback[1] = &xUSBHAL::EP1_IN_callback;
+    epCallback[2] = &xUSBHAL::EP2_OUT_callback;
+    epCallback[3] = &xUSBHAL::EP2_IN_callback;
+    epCallback[4] = &xUSBHAL::EP3_OUT_callback;
+    epCallback[5] = &xUSBHAL::EP3_IN_callback;
 
     // Enable power and clocking
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -99,31 +99,31 @@ USBHAL::USBHAL(void) {
     NVIC_SetPriority(OTG_FS_IRQn, 1);
 }
 
-USBHAL::~USBHAL(void) {
+xUSBHAL::~xUSBHAL(void) {
 }
 
-void USBHAL::connect(void) {
+void xUSBHAL::connect(void) {
     NVIC_EnableIRQ(OTG_FS_IRQn);
 }
 
-void USBHAL::disconnect(void) {
+void xUSBHAL::disconnect(void) {
     NVIC_DisableIRQ(OTG_FS_IRQn);
 }
 
-void USBHAL::configureDevice(void) {
+void xUSBHAL::configureDevice(void) {
     // Not needed
 }
 
-void USBHAL::unconfigureDevice(void) {
+void xUSBHAL::unconfigureDevice(void) {
     // Not needed
 }
 
-void USBHAL::setAddress(uint8_t address) {
+void xUSBHAL::setAddress(uint8_t address) {
     OTG_FS->DREGS.DCFG |= (address << 4);
     EP0write(0, 0);
 }
 
-bool USBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket,
+bool xUSBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket,
                              uint32_t flags) {
     uint32_t epIndex = endpoint >> 1;
 
@@ -187,17 +187,17 @@ bool USBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket,
 }
 
 // read setup packet
-void USBHAL::EP0setup(uint8_t *buffer) {
+void xUSBHAL::EP0setup(uint8_t *buffer) {
     memcpy(buffer, setupBuffer, MAX_PACKET_SIZE_EP0);
 }
 
-void USBHAL::EP0readStage(void) {
+void xUSBHAL::EP0readStage(void) {
 }
 
-void USBHAL::EP0read(void) {
+void xUSBHAL::EP0read(void) {
 }
 
-uint32_t USBHAL::EP0getReadResult(uint8_t *buffer) {
+uint32_t xUSBHAL::EP0getReadResult(uint8_t *buffer) {
     uint32_t* buffer32 = (uint32_t *) buffer;
     uint32_t length = rxFifoCount;
     for (uint32_t i = 0; i < length; i += 4) {
@@ -208,14 +208,14 @@ uint32_t USBHAL::EP0getReadResult(uint8_t *buffer) {
     return length;
 }
 
-void USBHAL::EP0write(uint8_t *buffer, uint32_t size) {
+void xUSBHAL::EP0write(uint8_t *buffer, uint32_t size) {
     endpointWrite(0, buffer, size);
 }
 
-void USBHAL::EP0getWriteResult(void) {
+void xUSBHAL::EP0getWriteResult(void) {
 }
 
-void USBHAL::EP0stall(void) {
+void xUSBHAL::EP0stall(void) {
     // If we stall the out endpoint here then we have problems transferring
     // and setup requests after the (stalled) get device qualifier requests.
     // TODO: Find out if this is correct behavior, or whether we are doing
@@ -224,7 +224,7 @@ void USBHAL::EP0stall(void) {
 //    stallEndpoint(EP0OUT);
 }
 
-EP_STATUS USBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
+EP_STATUS xUSBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
     uint32_t epIndex = endpoint >> 1;
     uint32_t size = (1 << 19) | // 1 packet
                     (maximumSize << 0); // Packet size
@@ -239,7 +239,7 @@ EP_STATUS USBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
     return EP_PENDING;
 }
 
-EP_STATUS USBHAL::endpointReadResult(uint8_t endpoint, uint8_t * buffer, uint32_t *bytesRead) {
+EP_STATUS xUSBHAL::endpointReadResult(uint8_t endpoint, uint8_t * buffer, uint32_t *bytesRead) {
     if (!(epComplete & (1 << endpoint))) {
         return EP_PENDING;
     }
@@ -254,7 +254,7 @@ EP_STATUS USBHAL::endpointReadResult(uint8_t endpoint, uint8_t * buffer, uint32_
     return EP_COMPLETED;
 }
 
-EP_STATUS USBHAL::endpointWrite(uint8_t endpoint, uint8_t *data, uint32_t size) {
+EP_STATUS xUSBHAL::endpointWrite(uint8_t endpoint, uint8_t *data, uint32_t size) {
     uint32_t epIndex = endpoint >> 1;
     OTG_FS->INEP_REGS[epIndex].DIEPTSIZ = (1 << 19) | // 1 packet
                                           (size << 0); // Size of packet
@@ -273,7 +273,7 @@ EP_STATUS USBHAL::endpointWrite(uint8_t endpoint, uint8_t *data, uint32_t size) 
     return EP_PENDING;
 }
 
-EP_STATUS USBHAL::endpointWriteResult(uint8_t endpoint) {
+EP_STATUS xUSBHAL::endpointWriteResult(uint8_t endpoint) {
     if (epComplete & (1 << endpoint)) {
         epComplete &= ~(1 << endpoint);
         return EP_COMPLETED;
@@ -282,7 +282,7 @@ EP_STATUS USBHAL::endpointWriteResult(uint8_t endpoint) {
     return EP_PENDING;
 }
 
-void USBHAL::stallEndpoint(uint8_t endpoint) {
+void xUSBHAL::stallEndpoint(uint8_t endpoint) {
     if (endpoint & 0x1) { // In EP
         OTG_FS->INEP_REGS[endpoint >> 1].DIEPCTL |= (1 << 30) | // Disable
                                                     (1 << 21); // Stall
@@ -294,24 +294,24 @@ void USBHAL::stallEndpoint(uint8_t endpoint) {
     }
 }
 
-void USBHAL::unstallEndpoint(uint8_t endpoint) {
+void xUSBHAL::unstallEndpoint(uint8_t endpoint) {
 
 }
 
-bool USBHAL::getEndpointStallState(uint8_t endpoint) {
+bool xUSBHAL::getEndpointStallState(uint8_t endpoint) {
     return false;
 }
 
-void USBHAL::remoteWakeup(void) {
+void xUSBHAL::remoteWakeup(void) {
 }
 
 
-void USBHAL::_usbisr(void) {
+void xUSBHAL::_usbisr(void) {
     instance->usbisr();
 }
 
 
-void USBHAL::usbisr(void) {
+void xUSBHAL::usbisr(void) {
     if (OTG_FS->GREGS.GINTSTS & (1 << 11)) { // USB Suspend
         suspendStateChanged(1);
     };

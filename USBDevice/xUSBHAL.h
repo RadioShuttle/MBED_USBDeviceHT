@@ -16,22 +16,22 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef USBBUSINTERFACE_H
-#define USBBUSINTERFACE_H
+#ifndef XUSBBUSINTERFACE_H
+#define XUSBBUSINTERFACE_H
 
 #include "mbed.h"
-#include "USBEndpoints.h"
+#include "xUSBEndpoints.h"
 #include "mbed_toolchain.h"
 
 //#ifdef __GNUC__
 //#define __packed __attribute__ ((__packed__))
 //#endif
 
-class USBHAL {
+class xUSBHAL {
 public:
     /* Configuration */
-    USBHAL();
-    ~USBHAL();
+    xUSBHAL();
+    ~xUSBHAL();
     void connect(void);
     void disconnect(void);
     void configureDevice(void);
@@ -124,18 +124,18 @@ protected:
 private:
     void usbisr(void);
     static void _usbisr(void);
-    static USBHAL * instance;
+    static xUSBHAL * instance;
 
 #if defined(TARGET_LPC11UXX) || defined(TARGET_LPC11U6X) || defined(TARGET_LPC1347) || defined(TARGET_LPC1549)
-    bool (USBHAL::*epCallback[10 - 2])(void);
+    bool (xUSBHAL::*epCallback[10 - 2])(void);
 #elif (defined(TARGET_STM32F4) && !defined(USB_STM_HAL)) || defined(TARGET_M451)
-    bool (USBHAL::*epCallback[8 - 2])(void);
+    bool (xUSBHAL::*epCallback[8 - 2])(void);
 #elif defined(TARGET_STM)
     PCD_HandleTypeDef hpcd;
 #elif defined(TARGET_NUC472) || defined(TARGET_M480)
-    bool (USBHAL::*epCallback[14 - 2])(void);
+    bool (xUSBHAL::*epCallback[14 - 2])(void);
 #else
-    bool (USBHAL::*epCallback[32 - 2])(void);
+    bool (xUSBHAL::*epCallback[32 - 2])(void);
 #endif
 
 

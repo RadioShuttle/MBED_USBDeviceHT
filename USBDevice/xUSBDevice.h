@@ -16,17 +16,17 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef USBDEVICE_H
-#define USBDEVICE_H
+#ifndef XUSBDEVICE_H
+#define XUSBDEVICE_H
 
 #include "mbed.h"
-#include "USBDevice_Types.h"
-#include "USBHAL.h"
+#include "xUSBDevice_Types.h"
+#include "xUSBHAL.h"
 
-class USBDevice: public USBHAL
+class xUSBDevice: public xUSBHAL
 {
 public:
-    USBDevice(uint16_t vendor_id, uint16_t product_id, uint16_t product_release);
+    xUSBDevice(uint16_t vendor_id, uint16_t product_id, uint16_t product_release);
 
     /*
     * Check if the device is configured

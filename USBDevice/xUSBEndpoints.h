@@ -16,8 +16,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef USBENDPOINTS_H
-#define USBENDPOINTS_H
+#ifndef XUSBENDPOINTS_H
+#define XUSBENDPOINTS_H
 
 /* SETUP packet size */
 #define SETUP_PACKET_SIZE (8)
@@ -46,7 +46,7 @@ typedef enum {
 #elif !defined(USB_STM_HAL) && defined(TARGET_STM32F4)
 #include "USBEndpoints_STM32F4.h"
 #elif defined (TARGET_STM32F4) || defined (TARGET_STM32F2) || defined (TARGET_STM32F7) || defined (TARGET_STM32F3) || defined(TARGET_STM32L0) || defined(TARGET_STM32L4) || defined(TARGET_STM32F1)
-#include "USBEndpoints_STM32.h"
+#include "xUSBEndpoints_STM32.h"
 #elif defined (TARGET_RZ_A1H) || defined (TARGET_VK_RZ_A1H)
 #include "USBEndpoints_RZ_A1H.h"
 #elif defined(TARGET_Maxim)

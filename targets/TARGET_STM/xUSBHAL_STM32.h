@@ -15,8 +15,8 @@
 * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#ifndef USBHAL_STM32_H
-#define USBHAL_STM32_H
+#ifndef XUSBHAL_STM32_H
+#define XUSBHAL_STM32_H
 
 #if defined(TARGET_NUCLEO_F207ZG) || \
     defined(TARGET_NUCLEO_F401RE) || \
@@ -36,14 +36,14 @@
     defined(TARGET_DISCO_F769NI) || \
     defined(TARGET_DISCO_L475VG_IOT01A) || \
     defined(TARGET_DISCO_L476VG)
-#include "USBHAL_IP_OTGFSHS.h"
+#include "xUSBHAL_IP_OTGFSHS.h"
 
 #elif defined(TARGET_NUCLEO_F103RB) || \
       defined(TARGET_NUCLEO_F303ZE) || \
       defined(TARGET_DISCO_L053C8) || \
       defined(TARGET_DISCO_L072CZ_LRWAN1) || \
       defined(TARGET_STM32L4)
-#include "USBHAL_IP_DEVICE.h"
+#include "xUSBHAL_IP_DEVICE.h"
 
 #else
 #error "Target not supported !"

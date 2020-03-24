@@ -16,17 +16,17 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef USBCDC_H
-#define USBCDC_H
+#ifndef XUSBCDC_H
+#define XUSBCDC_H
 
 /* These headers are included for child class. */
-#include "USBEndpoints.h"
-#include "USBDescriptor.h"
-#include "USBDevice_Types.h"
+#include "xUSBEndpoints.h"
+#include "xUSBDescriptor.h"
+#include "xUSBDevice_Types.h"
 
-#include "USBDevice.h"
+#include "xUSBDevice.h"
 
-class USBCDC: public USBDevice {
+class xUSBCDC: public xUSBDevice {
 public:
 
     /*
@@ -37,7 +37,7 @@ public:
     * @param product_release Your preoduct_release
     * @param connect_blocking define if the connection must be blocked if USB not plugged in
     */
-    USBCDC(uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking);
+    xUSBCDC(uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking);
 
 protected:
 

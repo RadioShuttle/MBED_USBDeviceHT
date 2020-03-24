@@ -22,7 +22,7 @@
 */
 
 #include "stdint.h"
-#include "USBCDC.h"
+#include "xUSBCDC.h"
 
 static uint8_t cdc_line_coding[7]= {0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08};
 
@@ -38,18 +38,18 @@ static uint8_t cdc_line_coding[7]= {0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08};
 
 #define MAX_CDC_REPORT_SIZE MAX_PACKET_SIZE_EPBULK
 
-USBCDC::USBCDC(uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking): USBDevice(vendor_id, product_id, product_release) {
+xUSBCDC::xUSBCDC(uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking): xUSBDevice(vendor_id, product_id, product_release) {
     terminal_connected = false;
-    USBDevice::connect(connect_blocking);
+    xUSBDevice::connect(connect_blocking);
 }
 
-void USBCDC::USBCallback_busReset(void) {
+void xUSBCDC::USBCallback_busReset(void) {
 	if (terminal_connected)
 		sleep_manager_unlock_deep_sleep();
     terminal_connected = false;
 };
 
-bool USBCDC::USBCallback_request(void) {
+bool xUSBCDC::USBCallback_request(void) {
     /* Called in ISR context */
 
     bool success = false;
@@ -89,7 +89,7 @@ bool USBCDC::USBCallback_request(void) {
     return success;
 }
 
-void USBCDC::USBCallback_requestCompleted(uint8_t *buf, uint32_t length) {
+void xUSBCDC::USBCallback_requestCompleted(uint8_t *buf, uint32_t length) {
     // Request of setting line coding has 7 bytes
     if (length != 7) {
         return;
@@ -118,7 +118,7 @@ void USBCDC::USBCallback_requestCompleted(uint8_t *buf, uint32_t length) {
 // Called in ISR context
 // Set configuration. Return false if the
 // configuration is not supported.
-bool USBCDC::USBCallback_setConfiguration(uint8_t configuration) {
+bool xUSBCDC::USBCallback_setConfiguration(uint8_t configuration) {
     if (configuration != DEFAULT_CONFIGURATION) {
         return false;
     }
@@ -133,20 +133,20 @@ bool USBCDC::USBCallback_setConfiguration(uint8_t configuration) {
     return true;
 }
 
-bool USBCDC::send(uint8_t * buffer, uint32_t size) {
-    return USBDevice::write(EPBULK_IN, buffer, size, MAX_CDC_REPORT_SIZE);
+bool xUSBCDC::send(uint8_t * buffer, uint32_t size) {
+    return xUSBDevice::write(EPBULK_IN, buffer, size, MAX_CDC_REPORT_SIZE);
 }
 
-bool USBCDC::readEP(uint8_t * buffer, uint32_t * size) {
-    if (!USBDevice::readEP(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE))
+bool xUSBCDC::readEP(uint8_t * buffer, uint32_t * size) {
+    if (!xUSBDevice::readEP(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE))
         return false;
     if (!readStart(EPBULK_OUT, MAX_CDC_REPORT_SIZE))
         return false;
     return true;
 }
 
-bool USBCDC::readEP_NB(uint8_t * buffer, uint32_t * size) {
-    if (!USBDevice::readEP_NB(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE))
+bool xUSBCDC::readEP_NB(uint8_t * buffer, uint32_t * size) {
+    if (!xUSBDevice::readEP_NB(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE))
         return false;
     if (!readStart(EPBULK_OUT, MAX_CDC_REPORT_SIZE))
         return false;
@@ -154,7 +154,7 @@ bool USBCDC::readEP_NB(uint8_t * buffer, uint32_t * size) {
 }
 
 
-const uint8_t * USBCDC::deviceDesc() {
+const uint8_t * xUSBCDC::deviceDesc() {
     uint8_t deviceDescriptorTemp[] = {
         18,                   // bLength
         1,                    // bDescriptorType
@@ -176,7 +176,7 @@ const uint8_t * USBCDC::deviceDesc() {
     return deviceDescriptor;
 }
 
-const uint8_t * USBCDC::stringIinterfaceDesc() {
+const uint8_t * xUSBCDC::stringIinterfaceDesc() {
     static const uint8_t stringIinterfaceDescriptor[] = {
         0x08,
         STRING_DESCRIPTOR,
@@ -185,7 +185,7 @@ const uint8_t * USBCDC::stringIinterfaceDesc() {
     return stringIinterfaceDescriptor;
 }
 
-const uint8_t * USBCDC::stringIproductDesc() {
+const uint8_t * xUSBCDC::stringIproductDesc() {
     static const uint8_t stringIproductDescriptor[] = {
         0x16,
         STRING_DESCRIPTOR,
@@ -197,7 +197,7 @@ const uint8_t * USBCDC::stringIproductDesc() {
 
 #define CONFIG1_DESC_SIZE (9+8+9+5+5+4+5+7+9+7+7)
 
-const uint8_t * USBCDC::configurationDesc() {
+const uint8_t * xUSBCDC::configurationDesc() {
     static const uint8_t configDescriptor[] = {
         // configuration descriptor
         9,                      // bLength

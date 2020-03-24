@@ -9,7 +9,7 @@
 #include "PinMap.h"
 
 #ifdef FEATURE_USBSERIAL
-#include "USBSerial.h"
+#include "xUSBSerial.h"
 #include "USBSerialBuffered.h"
 
 #ifndef ASSERT
@@ -72,7 +72,7 @@ template<typename T> inline bool help_atomic_compare_and_swap(T *ptr, T checkval
 
 
 USBSerialBuffered::USBSerialBuffered(int MaxBuffSize, uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking)
-: USBSerial(vendor_id, product_id, product_release, connect_blocking)
+: xUSBSerial(vendor_id, product_id, product_release, connect_blocking)
 , mFullBuffSize(MaxBuffSize)
 {
     ASSERT(mFullBuffSize > CorkBuffSize && "FullBuff must be larger than CorkBuff");
@@ -123,7 +123,7 @@ int USBSerialBuffered::vprintf_irqsafe(const char *fmt, std::va_list va) {
         irqbuff_release(buffused);
         return nchars;
     } else {
-        return USBSerial::vprintf(fmt, va);
+        return xUSBSerial::vprintf(fmt, va);
     }
 }
 

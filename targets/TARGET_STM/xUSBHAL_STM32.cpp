@@ -32,10 +32,10 @@
 #endif
 
 #ifndef USBSTM_HAL_UNSUPPORTED
-#include "USBHAL.h"
+#include "xUSBHAL.h"
 #include "pinmap.h"
 
-#include "USBHAL_STM32.h"
+#include "xUSBHAL_STM32.h"
 
 /* mbed endpoint definition to hal definition */
 #define EP_ADDR(ep) (((ep) >> 1)|((ep) & 1) << 7)
@@ -47,16 +47,16 @@
 /*  this call at device reception completion on a Out Enpoint  */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
     uint8_t endpoint = ADDR_EPOUT(epnum);
     priv->epComplete[endpoint] = 1;
     /* -2 endpoint 0 In out are not in call back list */
     if (epnum) {
-        bool (USBHAL::*func)(void) = priv->epCallback[endpoint-2];
+        bool (xUSBHAL::*func)(void) = priv->epCallback[endpoint-2];
         (obj->*func)();
     } else {
-        void (USBHAL::*func)(void) = priv->ep0_out;
+        void (xUSBHAL::*func)(void) = priv->ep0_out;
         (obj->*func)();
     }
 }
@@ -64,66 +64,66 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 /*  this is call at device transmission completion on In endpoint */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
     uint8_t endpoint = ADDR_EPIN(epnum);
     priv->epComplete[endpoint] = 1;
     /*  -2 endpoint 0 In out are not in call back list */
     if (epnum) {
-        bool (USBHAL::*func)(void) = priv->epCallback[endpoint-2];
+        bool (xUSBHAL::*func)(void) = priv->epCallback[endpoint-2];
         (obj->*func)();
     } else {
-        void (USBHAL::*func)(void) = priv->ep0_in;
+        void (xUSBHAL::*func)(void) = priv->ep0_in;
         (obj->*func)();
     }
 }
 /*  This is call at device set up reception  */
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
-    void (USBHAL::*func)(void)=priv->ep0_setup;
-    void (USBHAL::*func1)(void)=priv->ep0_read;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
+    void (xUSBHAL::*func)(void)=priv->ep0_setup;
+    void (xUSBHAL::*func1)(void)=priv->ep0_read;
     (obj->*func)();
     (obj->*func1)();
 }
 
 void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
-    void (USBHAL::*func)(unsigned int suspended) = priv->suspend_change;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
+    void (xUSBHAL::*func)(unsigned int suspended) = priv->suspend_change;
     (obj->*func)(1);
 }
 
 void HAL_PCD_ResumeCallback(PCD_HandleTypeDef *hpcd)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
-    void (USBHAL::*func)(unsigned int suspended) = priv->suspend_change;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
+    void (xUSBHAL::*func)(unsigned int suspended) = priv->suspend_change;
     (obj->*func)(0);
 }
 
 void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
-    void (USBHAL::*func)(unsigned int suspended) = priv->connect_change;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
+    void (xUSBHAL::*func)(unsigned int suspended) = priv->connect_change;
     (obj->*func)(1);
 }
 
 void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
-    void (USBHAL::*func)(unsigned int suspended) = priv->connect_change;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
+    void (xUSBHAL::*func)(unsigned int suspended) = priv->connect_change;
     (obj->*func)(0);
 }
 
 void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
     unsigned int i;
     for(i=0;i<hpcd->Init.dev_endpoints;i++) {
         priv->epComplete[2*i]=0;
@@ -134,8 +134,8 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
         HAL_PCD_EP_Flush(hpcd,EP_ADDR(2*i+1));
 
     }
-    void (USBHAL::*func)(void)=priv->bus_reset;
-    bool (USBHAL::*ep_realise)(uint8_t endpoint, uint32_t maxPacket, uint32_t flags) = priv->ep_realise;
+    void (xUSBHAL::*func)(void)=priv->bus_reset;
+    bool (xUSBHAL::*ep_realise)(uint8_t endpoint, uint32_t maxPacket, uint32_t flags) = priv->ep_realise;
     (obj->*func)();
     (obj->*ep_realise)(EP0IN, MAX_PACKET_SIZE_EP0,0);
     (obj->*ep_realise)(EP0OUT, MAX_PACKET_SIZE_EP0,0);
@@ -144,38 +144,38 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 
 /* hal pcd handler , used for STM32 HAL PCD Layer */
 
-uint32_t USBHAL::endpointReadcore(uint8_t endpoint, uint8_t *buffer) {
+uint32_t xUSBHAL::endpointReadcore(uint8_t endpoint, uint8_t *buffer) {
     return 0;
 }
 
-USBHAL::~USBHAL(void) {
-	USBHAL_Private_t *HALPriv = (USBHAL_Private_t *)(hpcd.pData);
+xUSBHAL::~xUSBHAL(void) {
+	xUSBHAL_Private_t *HALPriv = (xUSBHAL_Private_t *)(hpcd.pData);
 	HAL_PCD_DeInit(&hpcd);
 	delete HALPriv;
 }
 
-void USBHAL::connect(void) {
+void xUSBHAL::connect(void) {
     NVIC_EnableIRQ(USBHAL_IRQn);
 }
 
-void USBHAL::disconnect(void) {
+void xUSBHAL::disconnect(void) {
     NVIC_DisableIRQ(USBHAL_IRQn);
 }
 
-void USBHAL::configureDevice(void) {
+void xUSBHAL::configureDevice(void) {
     // Not needed
 }
 
-void USBHAL::unconfigureDevice(void) {
+void xUSBHAL::unconfigureDevice(void) {
     // Not needed
 }
 
-void USBHAL::setAddress(uint8_t address) {
+void xUSBHAL::setAddress(uint8_t address) {
 	HAL_PCD_SetAddress(&hpcd, address);
     EP0write(0, 0);
 }
 
-bool USBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket, uint32_t flags) {
+bool xUSBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket, uint32_t flags) {
     uint32_t epIndex = EP_ADDR(endpoint);
     uint32_t type = 0;
     uint32_t len;
@@ -210,16 +210,16 @@ bool USBHAL::realiseEndpoint(uint8_t endpoint, uint32_t maxPacket, uint32_t flag
 }
 
 // read setup packet
-void USBHAL::EP0setup(uint8_t *buffer) {
+void xUSBHAL::EP0setup(uint8_t *buffer) {
     memcpy(buffer,  hpcd.Setup, MAX_PACKET_SIZE_SETUP);
 	memset(hpcd.Setup,0,MAX_PACKET_SIZE_SETUP);
 }
 
-void USBHAL::EP0readStage(void) {
+void xUSBHAL::EP0readStage(void) {
 }
 
-void USBHAL::EP0read(void) {
-     USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)hpcd.pData;
+void xUSBHAL::EP0read(void) {
+     xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)hpcd.pData;
 	 uint32_t epIndex = EP_ADDR(EP0OUT);
 	 uint8_t *pBuf = (uint8_t *)HALPriv->pBufRx0;
 	 HAL_StatusTypeDef ret;
@@ -229,8 +229,8 @@ void USBHAL::EP0read(void) {
 	UNUSED(ret);
 }
 
-uint32_t USBHAL::EP0getReadResult(uint8_t *buffer) {
-    USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)hpcd.pData;
+uint32_t xUSBHAL::EP0getReadResult(uint8_t *buffer) {
+    xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)hpcd.pData;
     uint32_t length = (uint32_t) HAL_PCD_EP_GetRxCount(&hpcd, 0);
 	HALPriv->epComplete[EP0OUT] = 0;
     if (length) {
@@ -240,22 +240,22 @@ uint32_t USBHAL::EP0getReadResult(uint8_t *buffer) {
     return length;
 }
 
-void USBHAL::EP0write(uint8_t *buffer, uint32_t size) {
+void xUSBHAL::EP0write(uint8_t *buffer, uint32_t size) {
     /*  check that endpoint maximum size is not exceeding TX fifo */
     MBED_ASSERT(hpcd.IN_ep[0].maxpacket >= size);
     endpointWrite(EP0IN, buffer, size);
 }
 
-void USBHAL::EP0getWriteResult(void) {
+void xUSBHAL::EP0getWriteResult(void) {
 
 }
 
-void USBHAL::EP0stall(void) {
+void xUSBHAL::EP0stall(void) {
     stallEndpoint(EP0IN);
 }
 
-EP_STATUS USBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
-    USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)(hpcd.pData);
+EP_STATUS xUSBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
+    xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)(hpcd.pData);
     uint32_t epIndex = EP_ADDR(endpoint);
     uint8_t* pBuf = (uint8_t *)HALPriv->pBufRx;
 	HAL_StatusTypeDef ret;
@@ -267,8 +267,8 @@ EP_STATUS USBHAL::endpointRead(uint8_t endpoint, uint32_t maximumSize) {
     return EP_PENDING;
 }
 
-EP_STATUS USBHAL::endpointReadResult(uint8_t endpoint, uint8_t * buffer, uint32_t *bytesRead) {
-    USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)(hpcd.pData);
+EP_STATUS xUSBHAL::endpointReadResult(uint8_t endpoint, uint8_t * buffer, uint32_t *bytesRead) {
+    xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)(hpcd.pData);
 	if (HALPriv->epComplete[endpoint]==0) {
 		/*  no reception possible !!! */
 		bytesRead = 0;
@@ -284,8 +284,8 @@ EP_STATUS USBHAL::endpointReadResult(uint8_t endpoint, uint8_t * buffer, uint32_
     return EP_COMPLETED;
 }
 
-EP_STATUS USBHAL::endpointWrite(uint8_t endpoint, uint8_t *data, uint32_t size) {
-	USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)(hpcd.pData);
+EP_STATUS xUSBHAL::endpointWrite(uint8_t endpoint, uint8_t *data, uint32_t size) {
+	xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)(hpcd.pData);
     uint32_t epIndex = EP_ADDR(endpoint);
     HAL_StatusTypeDef ret;
     // clean transmission end flag before requesting transmission
@@ -298,15 +298,15 @@ EP_STATUS USBHAL::endpointWrite(uint8_t endpoint, uint8_t *data, uint32_t size) 
     return EP_PENDING;
 }
 
-EP_STATUS USBHAL::endpointWriteResult(uint8_t endpoint) {
-	USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)(hpcd.pData);
+EP_STATUS xUSBHAL::endpointWriteResult(uint8_t endpoint) {
+	xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)(hpcd.pData);
     if (HALPriv->epComplete[endpoint] == 1)
         return EP_COMPLETED;
     return EP_PENDING;
 }
 
-void USBHAL::stallEndpoint(uint8_t endpoint) {
-    USBHAL_Private_t *HALPriv =  (USBHAL_Private_t *)(hpcd.pData);
+void xUSBHAL::stallEndpoint(uint8_t endpoint) {
+    xUSBHAL_Private_t *HALPriv =  (xUSBHAL_Private_t *)(hpcd.pData);
 	HAL_StatusTypeDef ret;
 	HALPriv->epComplete[endpoint] = 0;
 	ret = HAL_PCD_EP_SetStall(&hpcd, EP_ADDR(endpoint));
@@ -314,25 +314,25 @@ void USBHAL::stallEndpoint(uint8_t endpoint) {
 	UNUSED(ret);
 }
 
-void USBHAL::unstallEndpoint(uint8_t endpoint) {
+void xUSBHAL::unstallEndpoint(uint8_t endpoint) {
 	HAL_StatusTypeDef ret;
     ret = HAL_PCD_EP_ClrStall(&hpcd, EP_ADDR(endpoint));
 	MBED_ASSERT(ret!=HAL_BUSY);
 	UNUSED(ret);
 }
 
-bool USBHAL::getEndpointStallState(uint8_t endpoint) {
+bool xUSBHAL::getEndpointStallState(uint8_t endpoint) {
     return false;
 }
 
-void USBHAL::remoteWakeup(void) {
+void xUSBHAL::remoteWakeup(void) {
 }
 
-void USBHAL::_usbisr(void) {
+void xUSBHAL::_usbisr(void) {
     instance->usbisr();
 }
 
-void USBHAL::usbisr(void) {
+void xUSBHAL::usbisr(void) {
     HAL_PCD_IRQHandler(&instance->hpcd);
 }
 

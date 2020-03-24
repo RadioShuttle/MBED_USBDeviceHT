@@ -6,7 +6,7 @@
 #ifndef __USBSERIALBUFFERED_H__
 #define __USBSERIALBUFFERED_H__
 
-#include "USBSerial.h"
+#include "xUSBSerial.h"
 
 /** This class is a wrapper around @ref USBSerial such that sending
  * of serial data over USB is supported in (and outside) of interrupt context.
@@ -14,7 +14,7 @@
  * before starting a USB data transmit. Silently discards data if the
  * @ref USBSerial object is not connected to the USB host.
  */
-class USBSerialBuffered : public USBSerial {
+class USBSerialBuffered : public xUSBSerial {
 public:
     USBSerialBuffered(int MaxBuffSize = 128, uint16_t vendor_id = 0x16c0, uint16_t product_id = 0x05e1, uint16_t product_release = 0x0001, bool connect_blocking = false);
     ~USBSerialBuffered();

@@ -23,9 +23,9 @@
 
 #include "stdint.h"
 
-#include "USBEndpoints.h"
-#include "USBDevice.h"
-#include "USBDescriptor.h"
+#include "xUSBEndpoints.h"
+#include "xUSBDevice.h"
+#include "xUSBDescriptor.h"
 
 //#define DEBUG
 
@@ -45,7 +45,7 @@
     ((endpoint & 0x80) ? 1 : 0))
 
 
-bool USBDevice::requestGetDescriptor(void)
+bool xUSBDevice::requestGetDescriptor(void)
 {
     bool success = false;
 #ifdef DEBUG
@@ -170,7 +170,7 @@ bool USBDevice::requestGetDescriptor(void)
     return success;
 }
 
-void USBDevice::decodeSetupPacket(uint8_t *data, SETUP_PACKET *packet)
+void xUSBDevice::decodeSetupPacket(uint8_t *data, SETUP_PACKET *packet)
 {
     /* Fill in the elements of a SETUP_PACKET structure from raw data */
     packet->bmRequestType.dataTransferDirection = (data[0] & 0x80) >> 7;
@@ -183,7 +183,7 @@ void USBDevice::decodeSetupPacket(uint8_t *data, SETUP_PACKET *packet)
 }
 
 
-bool USBDevice::controlOut(void)
+bool xUSBDevice::controlOut(void)
 {
     /* Control transfer data OUT stage */
     uint8_t buffer[MAX_PACKET_SIZE_EP0];
@@ -231,7 +231,7 @@ bool USBDevice::controlOut(void)
     return true;
 }
 
-bool USBDevice::controlIn(void)
+bool xUSBDevice::controlIn(void)
 {
     /* Control transfer data IN stage */
     uint32_t packetSize;
@@ -285,7 +285,7 @@ bool USBDevice::controlIn(void)
     return true;
 }
 
-bool USBDevice::requestSetAddress(void)
+bool xUSBDevice::requestSetAddress(void)
 {
     /* Set the device address */
     setAddress(transfer.setup.wValue);
@@ -302,7 +302,7 @@ bool USBDevice::requestSetAddress(void)
     return true;
 }
 
-bool USBDevice::requestSetConfiguration(void)
+bool xUSBDevice::requestSetConfiguration(void)
 {
 
     device.configuration = transfer.setup.wValue;
@@ -330,7 +330,7 @@ bool USBDevice::requestSetConfiguration(void)
     return true;
 }
 
-bool USBDevice::requestGetConfiguration(void)
+bool xUSBDevice::requestGetConfiguration(void)
 {
     /* Send the device configuration */
     transfer.ptr = &device.configuration;
@@ -339,7 +339,7 @@ bool USBDevice::requestGetConfiguration(void)
     return true;
 }
 
-bool USBDevice::requestGetInterface(void)
+bool xUSBDevice::requestGetInterface(void)
 {
     /* Return the selected alternate setting for an interface */
 
@@ -356,7 +356,7 @@ bool USBDevice::requestGetInterface(void)
     return true;
 }
 
-bool USBDevice::requestSetInterface(void)
+bool xUSBDevice::requestSetInterface(void)
 {
     bool success = false;
     if(USBCallback_setInterface(transfer.setup.wIndex, transfer.setup.wValue))
@@ -368,7 +368,7 @@ bool USBDevice::requestSetInterface(void)
     return success;
 }
 
-bool USBDevice::requestSetFeature()
+bool xUSBDevice::requestSetFeature()
 {
     bool success = false;
 
@@ -402,7 +402,7 @@ bool USBDevice::requestSetFeature()
     return success;
 }
 
-bool USBDevice::requestClearFeature()
+bool xUSBDevice::requestClearFeature()
 {
     bool success = false;
 
@@ -435,7 +435,7 @@ bool USBDevice::requestClearFeature()
     return success;
 }
 
-bool USBDevice::requestGetStatus(void)
+bool xUSBDevice::requestGetStatus(void)
 {
     static uint16_t status;
     bool success = false;
@@ -488,7 +488,7 @@ bool USBDevice::requestGetStatus(void)
     return success;
 }
 
-bool USBDevice::requestSetup(void)
+bool xUSBDevice::requestSetup(void)
 {
     bool success = false;
 
@@ -536,7 +536,7 @@ bool USBDevice::requestSetup(void)
     return success;
 }
 
-bool USBDevice::controlSetup(void)
+bool xUSBDevice::controlSetup(void)
 {
     bool success = false;
 
@@ -658,7 +658,7 @@ bool USBDevice::controlSetup(void)
     return true;
 }
 
-void USBDevice::busReset(void)
+void xUSBDevice::busReset(void)
 {
     device.state = DEFAULT;
     device.configuration = 0;
@@ -668,7 +668,7 @@ void USBDevice::busReset(void)
     USBCallback_busReset();
 }
 
-void USBDevice::EP0setupCallback(void)
+void xUSBDevice::EP0setupCallback(void)
 {
     /* Endpoint 0 setup event */
     if (!controlSetup())
@@ -680,7 +680,7 @@ void USBDevice::EP0setupCallback(void)
     /* Return true if an OUT data stage is expected */
 }
 
-void USBDevice::EP0out(void)
+void xUSBDevice::EP0out(void)
 {
     /* Endpoint 0 OUT data event */
     if (!controlOut())
@@ -690,7 +690,7 @@ void USBDevice::EP0out(void)
     }
 }
 
-void USBDevice::EP0in(void)
+void xUSBDevice::EP0in(void)
 {
 #ifdef DEBUG
     printf("EP0IN\r\n");
@@ -703,16 +703,16 @@ void USBDevice::EP0in(void)
     }
 }
 
-bool USBDevice::configured(void)
+bool xUSBDevice::configured(void)
 {
     /* Returns true if device is in the CONFIGURED state */
     return (device.state == CONFIGURED);
 }
 
-void USBDevice::connect(bool blocking)
+void xUSBDevice::connect(bool blocking)
 {
     /* Connect device */
-    USBHAL::connect();
+    xUSBHAL::connect();
 
     if (blocking) {
         /* Block if not configured */
@@ -720,10 +720,10 @@ void USBDevice::connect(bool blocking)
     }
 }
 
-void USBDevice::disconnect(void)
+void xUSBDevice::disconnect(void)
 {
     /* Disconnect device */
-    USBHAL::disconnect();
+    xUSBHAL::disconnect();
     
     /* Set initial device state */
     device.state = POWERED;
@@ -731,23 +731,23 @@ void USBDevice::disconnect(void)
     device.suspended = false;
 }
 
-CONTROL_TRANSFER * USBDevice::getTransferPtr(void)
+CONTROL_TRANSFER * xUSBDevice::getTransferPtr(void)
 {
     return &transfer;
 }
 
-bool USBDevice::addEndpoint(uint8_t endpoint, uint32_t maxPacket)
+bool xUSBDevice::addEndpoint(uint8_t endpoint, uint32_t maxPacket)
 {
     return realiseEndpoint(endpoint, maxPacket, 0);
 }
 
-bool USBDevice::addRateFeedbackEndpoint(uint8_t endpoint, uint32_t maxPacket)
+bool xUSBDevice::addRateFeedbackEndpoint(uint8_t endpoint, uint32_t maxPacket)
 {
     /* For interrupt endpoints only */
     return realiseEndpoint(endpoint, maxPacket, RATE_FEEDBACK_MODE);
 }
 
-uint8_t * USBDevice::findDescriptor(uint8_t descriptorType)
+uint8_t * xUSBDevice::findDescriptor(uint8_t descriptorType)
 {
     /* Find a descriptor within the list of descriptors */
     /* following a configuration descriptor. */
@@ -794,16 +794,16 @@ uint8_t * USBDevice::findDescriptor(uint8_t descriptorType)
 }
 
 
-void USBDevice::connectStateChanged(unsigned int connected)
+void xUSBDevice::connectStateChanged(unsigned int connected)
 {
 }
 
-void USBDevice::suspendStateChanged(unsigned int suspended)
+void xUSBDevice::suspendStateChanged(unsigned int suspended)
 {
 }
 
 
-USBDevice::USBDevice(uint16_t vendor_id, uint16_t product_id, uint16_t product_release){
+xUSBDevice::xUSBDevice(uint16_t vendor_id, uint16_t product_id, uint16_t product_release){
     VENDOR_ID = vendor_id;
     PRODUCT_ID = product_id;
     PRODUCT_RELEASE = product_release;
@@ -815,13 +815,13 @@ USBDevice::USBDevice(uint16_t vendor_id, uint16_t product_id, uint16_t product_r
 };
 
 
-bool USBDevice::readStart(uint8_t endpoint, uint32_t maxSize)
+bool xUSBDevice::readStart(uint8_t endpoint, uint32_t maxSize)
 {
     return endpointRead(endpoint, maxSize) == EP_PENDING;
 }
 
 
-bool USBDevice::write(uint8_t endpoint, uint8_t * buffer, uint32_t size, uint32_t maxSize)
+bool xUSBDevice::write(uint8_t endpoint, uint8_t * buffer, uint32_t size, uint32_t maxSize)
 {
     EP_STATUS result;
 
@@ -852,7 +852,7 @@ bool USBDevice::write(uint8_t endpoint, uint8_t * buffer, uint32_t size, uint32_
 }
 
 
-bool USBDevice::writeNB(uint8_t endpoint, uint8_t * buffer, uint32_t size, uint32_t maxSize)
+bool xUSBDevice::writeNB(uint8_t endpoint, uint8_t * buffer, uint32_t size, uint32_t maxSize)
 {
     EP_STATUS result;
 
@@ -880,7 +880,7 @@ bool USBDevice::writeNB(uint8_t endpoint, uint8_t * buffer, uint32_t size, uint3
 
 
 
-bool USBDevice::readEP(uint8_t endpoint, uint8_t * buffer, uint32_t * size, uint32_t maxSize)
+bool xUSBDevice::readEP(uint8_t endpoint, uint8_t * buffer, uint32_t * size, uint32_t maxSize)
 {
     EP_STATUS result;
 
@@ -897,7 +897,7 @@ bool USBDevice::readEP(uint8_t endpoint, uint8_t * buffer, uint32_t * size, uint
 }
 
 
-bool USBDevice::readEP_NB(uint8_t endpoint, uint8_t * buffer, uint32_t * size, uint32_t maxSize)
+bool xUSBDevice::readEP_NB(uint8_t endpoint, uint8_t * buffer, uint32_t * size, uint32_t maxSize)
 {
     EP_STATUS result;
 
@@ -912,7 +912,7 @@ bool USBDevice::readEP_NB(uint8_t endpoint, uint8_t * buffer, uint32_t * size, u
 
 
 
-const uint8_t * USBDevice::deviceDesc() {
+const uint8_t * xUSBDevice::deviceDesc() {
     uint8_t deviceDescriptorTemp[] = {
         DEVICE_DESCRIPTOR_LENGTH,       /* bLength */
         DEVICE_DESCRIPTOR,              /* bDescriptorType */
@@ -938,7 +938,7 @@ const uint8_t * USBDevice::deviceDesc() {
     return deviceDescriptor;
 }
 
-const uint8_t * USBDevice::stringLangidDesc() {
+const uint8_t * xUSBDevice::stringLangidDesc() {
     static const uint8_t stringLangidDescriptor[] = {
         0x04,               /*bLength*/
         STRING_DESCRIPTOR,  /*bDescriptorType 0x03*/
@@ -947,7 +947,7 @@ const uint8_t * USBDevice::stringLangidDesc() {
     return (uint8_t *)stringLangidDescriptor;
 }
 
-const uint8_t * USBDevice::stringImanufacturerDesc() {
+const uint8_t * xUSBDevice::stringImanufacturerDesc() {
     static const uint8_t stringImanufacturerDescriptor[] = {
         0x14,                                            /*bLength*/
         STRING_DESCRIPTOR,                               /*bDescriptorType 0x03*/
@@ -956,7 +956,7 @@ const uint8_t * USBDevice::stringImanufacturerDesc() {
     return stringImanufacturerDescriptor;
 }
 
-const uint8_t * USBDevice::stringIserialDesc() {
+const uint8_t * xUSBDevice::stringIserialDesc() {
     static const uint8_t stringIserialDescriptor[] = {
         0x16,                                                           /*bLength*/
         STRING_DESCRIPTOR,                                              /*bDescriptorType 0x03*/
@@ -965,7 +965,7 @@ const uint8_t * USBDevice::stringIserialDesc() {
     return stringIserialDescriptor;
 }
 
-const uint8_t * USBDevice::stringIConfigurationDesc() {
+const uint8_t * xUSBDevice::stringIConfigurationDesc() {
     static const uint8_t stringIconfigurationDescriptor[] = {
         0x06,               /*bLength*/
         STRING_DESCRIPTOR,  /*bDescriptorType 0x03*/
@@ -974,7 +974,7 @@ const uint8_t * USBDevice::stringIConfigurationDesc() {
     return stringIconfigurationDescriptor;
 }
 
-const uint8_t * USBDevice::stringIinterfaceDesc() {
+const uint8_t * xUSBDevice::stringIinterfaceDesc() {
     static const uint8_t stringIinterfaceDescriptor[] = {
         0x08,               /*bLength*/
         STRING_DESCRIPTOR,  /*bDescriptorType 0x03*/
@@ -983,7 +983,7 @@ const uint8_t * USBDevice::stringIinterfaceDesc() {
     return stringIinterfaceDescriptor;
 }
 
-const uint8_t * USBDevice::stringIproductDesc() {
+const uint8_t * xUSBDevice::stringIproductDesc() {
     static const uint8_t stringIproductDescriptor[] = {
         0x16,                                                       /*bLength*/
         STRING_DESCRIPTOR,                                          /*bDescriptorType 0x03*/

@@ -15,8 +15,8 @@
 * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#ifndef USBHAL_IP_DEVICE_H
-#define USBHAL_IP_DEVICE_H
+#ifndef XUSBHAL_IP_DEVICE_H
+#define XUSBHAL_IP_DEVICE_H
 
 #if defined(TARGET_NUCLEO_F303ZE)
 #define USBHAL_IRQn  USB_LP_CAN_RX0_IRQn
@@ -50,18 +50,18 @@ extern "C" { void pin_function(PinName pin, int function); }
 
 typedef struct
 {
-    USBHAL *inst;
+    xUSBHAL *inst;
 
-    void (USBHAL::*bus_reset)(void);
-    void (USBHAL::*sof)(int frame);
-    void (USBHAL::*connect_change)(unsigned int connected);
-    void (USBHAL::*suspend_change)(unsigned int suspended);
-    void (USBHAL::*ep0_setup)(void);
-    void (USBHAL::*ep0_in)(void);
-    void (USBHAL::*ep0_out)(void);
-    void (USBHAL::*ep0_read)(void);
-    bool (USBHAL::*ep_realise)(uint8_t endpoint, uint32_t maxPacket, uint32_t flags);
-    bool (USBHAL::*epCallback[(2 * NB_ENDPOINT) - 2])(void);
+    void (xUSBHAL::*bus_reset)(void);
+    void (xUSBHAL::*sof)(int frame);
+    void (xUSBHAL::*connect_change)(unsigned int connected);
+    void (xUSBHAL::*suspend_change)(unsigned int suspended);
+    void (xUSBHAL::*ep0_setup)(void);
+    void (xUSBHAL::*ep0_in)(void);
+    void (xUSBHAL::*ep0_out)(void);
+    void (xUSBHAL::*ep0_read)(void);
+    bool (xUSBHAL::*ep_realise)(uint8_t endpoint, uint32_t maxPacket, uint32_t flags);
+    bool (xUSBHAL::*epCallback[(2 * NB_ENDPOINT) - 2])(void);
 
     uint8_t epComplete[2 * NB_ENDPOINT];
 
@@ -70,7 +70,7 @@ typedef struct
     uint32_t pBufRx0[MAX_PACKET_SIZE_EP0 >> 2];
 
     gpio_t usb_switch;
-} USBHAL_Private_t;
+} xUSBHAL_Private_t;
 
 uint32_t HAL_PCDEx_GetTxFiFo(PCD_HandleTypeDef *hpcd, uint8_t fifo)
 {
@@ -79,16 +79,16 @@ uint32_t HAL_PCDEx_GetTxFiFo(PCD_HandleTypeDef *hpcd, uint8_t fifo)
 
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) 
 {
-    USBHAL_Private_t *priv=((USBHAL_Private_t *)(hpcd->pData));
-    USBHAL *obj= priv->inst;
+    xUSBHAL_Private_t *priv=((xUSBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL *obj= priv->inst;
     uint32_t sofnum = (hpcd->Instance->FNR) & USB_FNR_FN;
-    void (USBHAL::*func)(int frame) = priv->sof;
+    void (xUSBHAL::*func)(int frame) = priv->sof;
     (obj->*func)(sofnum);
 }
 
 void HAL_PCDEx_SetConnectionState(PCD_HandleTypeDef *hpcd, uint8_t state)
 {
-    USBHAL_Private_t *priv = ((USBHAL_Private_t *)(hpcd->pData));
+    xUSBHAL_Private_t *priv = ((xUSBHAL_Private_t *)(hpcd->pData));
 #if defined(TARGET_NUCLEO_F103RB)
     gpio_write(&(priv->usb_switch), !state);
 #else
@@ -96,10 +96,10 @@ void HAL_PCDEx_SetConnectionState(PCD_HandleTypeDef *hpcd, uint8_t state)
 #endif
 }
 
-USBHAL *USBHAL::instance;
+xUSBHAL *xUSBHAL::instance;
 
-USBHAL::USBHAL(void) {
-    USBHAL_Private_t *HALPriv = new(USBHAL_Private_t);
+xUSBHAL::xUSBHAL(void) {
+    xUSBHAL_Private_t *HALPriv = new(xUSBHAL_Private_t);
 
     hpcd.Instance = USB;
 
@@ -112,21 +112,21 @@ USBHAL::USBHAL(void) {
 
     // Pass instance for usage inside call back
     HALPriv->inst = this;
-    HALPriv->bus_reset = &USBHAL::busReset;
-    HALPriv->suspend_change = &USBHAL::suspendStateChanged;
-    HALPriv->connect_change = &USBHAL::connectStateChanged;
-    HALPriv->sof = &USBHAL::SOF;
-    HALPriv->ep0_setup = &USBHAL::EP0setupCallback;
-    HALPriv->ep_realise = &USBHAL::realiseEndpoint;
-    HALPriv->ep0_in = &USBHAL::EP0in;
-    HALPriv->ep0_out = &USBHAL::EP0out;
-    HALPriv->ep0_read = &USBHAL::EP0read;
-    HALPriv->epCallback[0] = &USBHAL::EP1_OUT_callback;
-    HALPriv->epCallback[1] = &USBHAL::EP1_IN_callback;
-    HALPriv->epCallback[2] = &USBHAL::EP2_OUT_callback;
-    HALPriv->epCallback[3] = &USBHAL::EP2_IN_callback;
-    HALPriv->epCallback[4] = &USBHAL::EP3_OUT_callback;
-    HALPriv->epCallback[5] = &USBHAL::EP3_IN_callback;
+    HALPriv->bus_reset = &xUSBHAL::busReset;
+    HALPriv->suspend_change = &xUSBHAL::suspendStateChanged;
+    HALPriv->connect_change = &xUSBHAL::connectStateChanged;
+    HALPriv->sof = &xUSBHAL::SOF;
+    HALPriv->ep0_setup = &xUSBHAL::EP0setupCallback;
+    HALPriv->ep_realise = &xUSBHAL::realiseEndpoint;
+    HALPriv->ep0_in = &xUSBHAL::EP0in;
+    HALPriv->ep0_out = &xUSBHAL::EP0out;
+    HALPriv->ep0_read = &xUSBHAL::EP0read;
+    HALPriv->epCallback[0] = &xUSBHAL::EP1_OUT_callback;
+    HALPriv->epCallback[1] = &xUSBHAL::EP1_IN_callback;
+    HALPriv->epCallback[2] = &xUSBHAL::EP2_OUT_callback;
+    HALPriv->epCallback[3] = &xUSBHAL::EP2_IN_callback;
+    HALPriv->epCallback[4] = &xUSBHAL::EP3_OUT_callback;
+    HALPriv->epCallback[5] = &xUSBHAL::EP3_IN_callback;
     instance = this;
 
     // Configure USB pins and other clocks
@@ -188,4 +188,4 @@ USBHAL::USBHAL(void) {
     HAL_PCD_Start(&hpcd);
 }
 
-#endif // USBHAL_IP_DEVICE_H
+#endif // xUSBHAL_IP_DEVICE_H
