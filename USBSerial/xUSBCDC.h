@@ -113,6 +113,59 @@ protected:
     virtual void lineCodingChanged(int baud, int bits, int parity, int stop) {};
 
 protected:
+	struct LineCoding {
+		uint32_t 	baud;
+		uint8_t		stopbits;
+		uint8_t		parity;
+		uint8_t		bits;
+	} __attribute__((packed));
+	MBED_STATIC_ASSERT(sizeof(LineCoding) == 7, "wrong LineCoding size");
+
+	struct LineState {
+		bool RTS : 1;
+		bool DTR : 1;
+		uint16_t reserved : 14;
+	} __attribute__((packed));
+	MBED_STATIC_ASSERT(sizeof(LineState) == 2, "wrong LineState size");
+
+	struct RingerParms {
+		uint8_t	ringerPattern : 8;
+		uint8_t	ringerVolume : 8;
+		uint16_t reserved : 15;
+		bool	hasRinger : 1;
+	} __attribute__((packed));
+	MBED_STATIC_ASSERT(sizeof(RingerParms) == 4, "wrong RingerParms size");
+
+	struct UARTState {
+		bool bRxCarrier : 1;
+		bool bTxCarrier : 1;
+		bool bBreak : 1;
+		bool bRingSignal : 1;
+		bool bFraming : 1;
+		bool bParity : 1;
+		bool bOverRun : 1;
+		uint16_t reserved : 9;
+	} __attribute__((packed));
+	MBED_STATIC_ASSERT(sizeof(UARTState) == 2, "wrong UARTState size");
+
+
+	enum CDCCmds {
+		CDC_SEND_ENCAPSULATED_COMMAND	= 0x00,
+		CDC_GET_ENCAPSULATED_RESPONSE	= 0x01,
+		CDC_SET_COMM_FEATURE			= 0x02,
+		CDC_GET_COMM_FEATURE			= 0x03,
+		CDC_CLEAR_COMM_FEATURE			= 0x04,
+		CDC_SET_LINE_CODING        		= 0x20,
+		CDC_GET_LINE_CODING        		= 0x21,
+		CDC_SET_CONTROL_LINE_STATE		= 0x22,
+		CDC_SEND_BREAK			   		= 0x23
+	};
+	enum StatCmds {
+		CDC_SERIAL_STATE				= 0x20,
+	};
+	LineCoding cdc_line_coding;
+	LineState _lineState;
+	bool _gotBreakReset;
     virtual bool USBCallback_request();
     virtual void USBCallback_requestCompleted(uint8_t *buf, uint32_t length);
     virtual bool USBCallback_setConfiguration(uint8_t configuration);

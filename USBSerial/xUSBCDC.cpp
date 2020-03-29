@@ -24,22 +24,27 @@
 #include "stdint.h"
 #include "xUSBCDC.h"
 
-static uint8_t cdc_line_coding[7]= {0x80, 0x25, 0x00, 0x00, 0x00, 0x00, 0x08};
-
+#ifndef DPRINTF_AVAILABLE
+#define	dprintf(...)	void()
+#endif
 #define DEFAULT_CONFIGURATION (1)
 
-#define CDC_SET_LINE_CODING        0x20
-#define CDC_GET_LINE_CODING        0x21
-#define CDC_SET_CONTROL_LINE_STATE 0x22
-
-// Control Line State bits
-#define CLS_DTR   (1 << 0)
-#define CLS_RTS   (1 << 1)
 
 #define MAX_CDC_REPORT_SIZE MAX_PACKET_SIZE_EPBULK
 
 xUSBCDC::xUSBCDC(uint16_t vendor_id, uint16_t product_id, uint16_t product_release, bool connect_blocking): xUSBDevice(vendor_id, product_id, product_release) {
+    
     terminal_connected = false;
+
+    memset(&cdc_line_coding, 0, sizeof(cdc_line_coding));
+	cdc_line_coding.baud = 9600;
+    cdc_line_coding.stopbits = 0;
+    cdc_line_coding.parity = 0;
+    cdc_line_coding.bits = 8;
+
+	memset(&_lineState, 0, sizeof(_lineState));
+	_gotBreakReset = false;
+
     xUSBDevice::connect(connect_blocking);
 }
 
@@ -58,60 +63,101 @@ bool xUSBCDC::USBCallback_request(void) {
     /* Process class-specific requests */
 
     if (transfer->setup.bmRequestType.Type == CLASS_TYPE) {
-        switch (transfer->setup.bRequest) {
+    	CDCCmds cmd = (CDCCmds)transfer->setup.bRequest;
+        switch (cmd) {
             case CDC_GET_LINE_CODING:
-                transfer->remaining = 7;
-                transfer->ptr = cdc_line_coding;
+				dprintf("CDC_GET_LINE_CODING");
+                transfer->remaining = sizeof(cdc_line_coding);
+                transfer->ptr = (uint8_t *)&cdc_line_coding;
                 transfer->direction = DEVICE_TO_HOST;
                 success = true;
                 break;
             case CDC_SET_LINE_CODING:
-                transfer->remaining = 7;
+                transfer->remaining = sizeof(cdc_line_coding);
                 transfer->notify = true;
                 success = true;
                 break;
             case CDC_SET_CONTROL_LINE_STATE:
-                if (transfer->setup.wValue & CLS_DTR) {
+            	memcpy(&_lineState, &transfer->setup.wValue, sizeof(_lineState));
+				dprintf("CDC_SET_CONTROL_LINE_STATE: DTR=%d RTS=%d", _lineState.DTR , _lineState.RTS);
+                if (_lineState.DTR) {
+                	_gotBreakReset = false;
                     terminal_connected = true;
 					sleep_manager_lock_deep_sleep();
                 } else {
-					if (terminal_connected)
-						sleep_manager_unlock_deep_sleep();
-                    terminal_connected = false;
+                	if (_gotBreakReset) {
+                    	_gotBreakReset = false;
+						if (terminal_connected)
+							sleep_manager_unlock_deep_sleep();
+                    	terminal_connected = false;
+                    }
                 }
                 success = true;
                 break;
+			case CDC_SEND_BREAK:
+					if (transfer->setup.wValue == 0 && transfer->setup.wLength == 4) {
+						// SET_RINGER_PARMS case
+						dprintf("SET_RINGER_PARMS: ");
+						RingerParms r;
+						memcpy(&r, transfer->ptr, 4);
+						success = true;
+						break;
+					}
+					if (transfer->setup.wValue == 0) {
+						dprintf("CDC_SEND_BREAK: reset");
+						_gotBreakReset = true;
+					} else {
+						dprintf("CDC_SEND_BREAK: delay_ms: %d", transfer->setup.wValue);
+					}
+					if (!_lineState.DTR && terminal_connected) {
+						/*
+						 * Delayed discounnt for the Arduino ESP32
+						 */
+						if (terminal_connected)
+							sleep_manager_unlock_deep_sleep();
+                    	terminal_connected = false;
+                    	_gotBreakReset = false;
+					}
+					success = true;
+				break;
             default:
+            	dprintf("UNKNOWN CDC REQEST: %d", transfer->setup.bRequest);
                 break;
         }
     }
+    if (transfer->setup.bmRequestType.Type == 0xa1 && transfer->setup.bRequest == CDC_SERIAL_STATE) {
+    	UARTState state;
+    	memset(&state, 0, sizeof(state));
+    	// TODO Uart state
+		success = true;
+	}
 
     return success;
 }
 
 void xUSBCDC::USBCallback_requestCompleted(uint8_t *buf, uint32_t length) {
-    // Request of setting line coding has 7 bytes
-    if (length != 7) {
-        return;
-    }
 
     CONTROL_TRANSFER * transfer = getTransferPtr();
 
     /* Process class-specific requests */
     if (transfer->setup.bmRequestType.Type == CLASS_TYPE) {
-        if (transfer->setup.bRequest == CDC_SET_LINE_CODING) {
-            if (memcmp(cdc_line_coding, buf, 7)) {
-                memcpy(cdc_line_coding, buf, 7);
+    	CDCCmds cmd = (CDCCmds)transfer->setup.bRequest;
+		switch(cmd) {
+		case CDC_SET_LINE_CODING:
+			if (length == sizeof(cdc_line_coding)) {
+				dprintf("CDC_SET_LINE_CODING: baud rate: %ld", cdc_line_coding.baud);
+				if (memcmp(&cdc_line_coding, buf, sizeof(cdc_line_coding))) {
+					memcpy(&cdc_line_coding, buf, sizeof(cdc_line_coding));
 
-                int baud = buf[0] + (buf[1] << 8)
-                         + (buf[2] << 16) + (buf[3] << 24);
-                int stop = buf[4];
-                int bits = buf[6];
-                int parity = buf[5];
-
-                lineCodingChanged(baud, bits, parity, stop);
-            }
-        }
+					lineCodingChanged(cdc_line_coding.baud, cdc_line_coding.bits, cdc_line_coding.parity, cdc_line_coding.stopbits);
+				}
+			} else {
+				dprintf("CDC Callback: CDC_SET_LINE_CODING: wrong size: %ld", length);
+			}
+			break;
+		default:
+			dprintf("CDC Callback: unkown command: %d", cmd);
+		}
     }
 }
 
