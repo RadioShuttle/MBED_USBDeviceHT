@@ -122,8 +122,8 @@ protected:
 	MBED_STATIC_ASSERT(sizeof(LineCoding) == 7, "wrong LineCoding size");
 
 	struct LineState {
-		bool RTS : 1;
 		bool DTR : 1;
+		bool RTS : 1;
 		uint16_t reserved : 14;
 	} __attribute__((packed));
 	MBED_STATIC_ASSERT(sizeof(LineState) == 2, "wrong LineState size");
