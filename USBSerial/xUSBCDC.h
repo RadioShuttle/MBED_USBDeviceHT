@@ -149,7 +149,7 @@ protected:
 	MBED_STATIC_ASSERT(sizeof(UARTState) == 2, "wrong UARTState size");
 
 
-	enum CDCCmds {
+	enum ClassTypeCmds {
 		CDC_SEND_ENCAPSULATED_COMMAND	= 0x00,
 		CDC_GET_ENCAPSULATED_RESPONSE	= 0x01,
 		CDC_SET_COMM_FEATURE			= 0x02,
@@ -160,7 +160,7 @@ protected:
 		CDC_SET_CONTROL_LINE_STATE		= 0x22,
 		CDC_SEND_BREAK			   		= 0x23
 	};
-	enum StatCmds {
+	enum StateCmds { // type == 0xa1
 		CDC_SERIAL_STATE				= 0x20,
 	};
 	LineCoding cdc_line_coding;

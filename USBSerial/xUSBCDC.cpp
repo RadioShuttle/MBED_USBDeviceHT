@@ -63,8 +63,8 @@ bool xUSBCDC::USBCallback_request(void) {
     /* Process class-specific requests */
 
     if (transfer->setup.bmRequestType.Type == CLASS_TYPE) {
-    	CDCCmds cmd = (CDCCmds)transfer->setup.bRequest;
-        switch (cmd) {
+		ClassTypeCmds cmd = (ClassTypeCmds)transfer->setup.bRequest;
+		switch (cmd) {
             case CDC_GET_LINE_CODING:
 				dprintf("CDC_GET_LINE_CODING");
                 transfer->remaining = sizeof(cdc_line_coding);
@@ -141,7 +141,7 @@ void xUSBCDC::USBCallback_requestCompleted(uint8_t *buf, uint32_t length) {
 
     /* Process class-specific requests */
     if (transfer->setup.bmRequestType.Type == CLASS_TYPE) {
-    	CDCCmds cmd = (CDCCmds)transfer->setup.bRequest;
+		ClassTypeCmds cmd = (ClassTypeCmds)transfer->setup.bRequest;
 		switch(cmd) {
 		case CDC_SET_LINE_CODING:
 			if (length == sizeof(cdc_line_coding)) {
