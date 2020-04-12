@@ -57,7 +57,9 @@ public:
     *
     */
     xUSBSerial(uint16_t vendor_id = 0x1f00, uint16_t product_id = 0x2012, uint16_t product_release = 0x0001, bool connect_blocking = true): xUSBCDC(vendor_id, product_id, product_release, connect_blocking){
-        settingsChangedCallback = 0;
+        settingsChangedCodingCallback = NULL;
+        settingsChangedStateCallback = NULL;
+        _rx_in_progress = true;
     };
 
 
@@ -81,7 +83,7 @@ public:
     *
     * @returns the number of bytes available
     */
-    uint8_t available();
+    size_t available();
 
      /**
     * Check if the terminal is connected.
@@ -96,7 +98,7 @@ public:
      *    1 if there is a character available to read,
      *    0 otherwise
      */
-    int readable() { return available() ? 1 : 0; }
+    int readable();
 
     /** Determine if there is space available to write a character
      *
@@ -157,21 +159,38 @@ public:
      * @param fptr function pointer
      */
     void attach(void (*fptr)(int baud, int bits, int parity, int stop)) {
-        settingsChangedCallback = fptr;
+        settingsChangedCodingCallback = fptr;
+    }
+
+    /**
+     * Attach a callback to call when serial's state (DTR/RTS) is changed.
+     *
+     * @param fptr function pointer
+     */
+    void attachState(void (*fptr)(bool dtr, bool rts)) {
+        settingsChangedStateCallback = fptr;
     }
 
 protected:
     virtual bool EPBULK_OUT_callback();
-    virtual void lineCodingChanged(int baud, int bits, int parity, int stop){
-        if (settingsChangedCallback) {
-            settingsChangedCallback(baud, bits, parity, stop);
+    virtual void lineCodingChanged(int baud, int bits, int parity, int stop) {
+        if (settingsChangedCodingCallback) {
+            settingsChangedCodingCallback(baud, bits, parity, stop);
+        }
+    }
+    virtual void lineStateChanged(bool dtr, bool rts) {
+        if (settingsChangedStateCallback) {
+            settingsChangedStateCallback(dtr, rts);
         }
     }
 
 private:
     Callback<void()> rx;
-    CircBuffer<uint8_t,128> buf;
-    void (*settingsChangedCallback)(int baud, int bits, int parity, int stop);
+    CircBuffer<uint8_t,512> buf;
+    void (*settingsChangedCodingCallback)(int baud, int bits, int parity, int stop);
+    void (*settingsChangedStateCallback)(bool dtr, bool rts);
+    volatile bool _rx_in_progress;
+;
 };
 
 #endif

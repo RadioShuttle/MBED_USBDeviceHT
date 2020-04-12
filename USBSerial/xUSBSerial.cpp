@@ -23,6 +23,7 @@
 
 #include "stdint.h"
 #include "xUSBSerial.h"
+#include "main.h"
 
 int xUSBSerial::_putc(int c) {
     if (!terminal_connected)
@@ -32,6 +33,11 @@ int xUSBSerial::_putc(int c) {
 }
 
 int xUSBSerial::_getc() {
+    if (!_rx_in_progress && buf.freespace() >= MAX_PACKET_SIZE_EPBULK * 2) {
+		if (issueReadStart())
+			_rx_in_progress = true;
+	}
+	
     uint8_t c = 0;
     while (buf.isEmpty());
     buf.dequeue(&c);
@@ -49,17 +55,31 @@ bool xUSBSerial::writeBlock(uint8_t * buf, uint16_t size) {
     return true;
 }
 
+int xUSBSerial::readable() {
+    if (!_rx_in_progress && buf.freespace() >= MAX_PACKET_SIZE_EPBULK * 2) {
+		if (issueReadStart())
+			_rx_in_progress = true;
+	}
+	return available() ? 1 : 0;
+}
 
 
 bool xUSBSerial::EPBULK_OUT_callback() {
-    uint8_t c[65];
+    uint8_t c[MAX_PACKET_SIZE_EPBULK];
     uint32_t size = 0;
+	
+	//we read the packet received and put it on the circular buffer
 
-    //we read the packet received and put it on the circular buffer
-    readEP(c, &size);
+	if (!readEP(c, &size, false)) // will read without new async request
+		return false;
+
     for (uint32_t i = 0; i < size; i++) {
         buf.queue(c[i]);
     }
+	if (buf.freespace() >= MAX_PACKET_SIZE_EPBULK * 2)
+		issueReadStart(); // issue new sync read request
+	else
+		_rx_in_progress = false;
 
     //call a potential handlenr
     if (rx)
@@ -68,7 +88,7 @@ bool xUSBSerial::EPBULK_OUT_callback() {
     return true;
 }
 
-uint8_t xUSBSerial::available() {
+size_t xUSBSerial::available() {
     return buf.available();
 }
 
