@@ -79,6 +79,10 @@ protected:
     */
     bool send(uint8_t * buffer, uint32_t size);
 
+	/*
+	 * start an sync read request
+	 */
+	bool issueReadStart();
     /*
     * Read a buffer from a certain endpoint. Warning: blocking
     *
@@ -88,7 +92,7 @@ protected:
     * @param maxSize the maximum length that can be read
     * @returns true if successful
     */
-    bool readEP(uint8_t * buffer, uint32_t * size);
+    bool readEP(uint8_t * buffer, uint32_t * size, bool readstart = true);
 
     /*
     * Read a buffer from a certain endpoint. Warning: non blocking
@@ -99,7 +103,7 @@ protected:
     * @param maxSize the maximum length that can be read
     * @returns true if successful
     */
-    bool readEP_NB(uint8_t * buffer, uint32_t * size);
+    bool readEP_NB(uint8_t * buffer, uint32_t * size, bool readstart = true);
 
     /*
     * Called by USBCallback_requestCompleted when CDC line coding is changed
@@ -111,6 +115,12 @@ protected:
     * @param stop The number of stop bits (1 or 2)
     */
     virtual void lineCodingChanged(int baud, int bits, int parity, int stop) {};
+    
+    /*
+     * The DTR/RTS has been updated by the host
+	 */
+    virtual void lineStateChanged(bool dtr, bool rts) {};
+
 
 protected:
 	struct LineCoding {

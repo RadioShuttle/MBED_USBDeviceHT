@@ -1,5 +1,6 @@
 #include "mbed.h"
 #include "PinMap.h"
+#include "main.h"
 
 #ifdef FEATURE_USBSERIAL
 
@@ -92,6 +93,7 @@ bool xUSBCDC::USBCallback_request(void) {
                     	terminal_connected = false;
                     }
                 }
+				lineStateChanged(_lineState.DTR, _lineState.RTS);
                 success = true;
                 break;
 			case CDC_SEND_BREAK:
@@ -183,19 +185,29 @@ bool xUSBCDC::send(uint8_t * buffer, uint32_t size) {
     return xUSBDevice::write(EPBULK_IN, buffer, size, MAX_CDC_REPORT_SIZE);
 }
 
-bool xUSBCDC::readEP(uint8_t * buffer, uint32_t * size) {
-    if (!xUSBDevice::readEP(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE))
+bool xUSBCDC::issueReadStart() {
+    return readStart(EPBULK_OUT, MAX_PACKET_SIZE_EPBULK);
+}
+
+bool xUSBCDC::readEP(uint8_t * buffer, uint32_t * size, bool readstart) {
+    if (!xUSBDevice::readEP(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE)) {
         return false;
-    if (!readStart(EPBULK_OUT, MAX_CDC_REPORT_SIZE))
-        return false;
+	}
+	if (readstart) {
+    	if (!readStart(EPBULK_OUT, MAX_CDC_REPORT_SIZE))
+        	return false;
+	}
     return true;
 }
 
-bool xUSBCDC::readEP_NB(uint8_t * buffer, uint32_t * size) {
-    if (!xUSBDevice::readEP_NB(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE))
+bool xUSBCDC::readEP_NB(uint8_t * buffer, uint32_t * size, bool readstart) {
+    if (!xUSBDevice::readEP_NB(EPBULK_OUT, buffer, size, MAX_CDC_REPORT_SIZE)) {
         return false;
-    if (!readStart(EPBULK_OUT, MAX_CDC_REPORT_SIZE))
-        return false;
+	}
+	if (readstart) {
+    	if (!readStart(EPBULK_OUT, MAX_CDC_REPORT_SIZE))
+	        return false;
+	}
     return true;
 }
 
