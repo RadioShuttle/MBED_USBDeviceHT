@@ -40,10 +40,21 @@ public:
         write %= size;
     }
 
+	/*
+	 * available means number of items of CircBuffer in use, e.g.: 0 for en empty queue.
+	 * 10 means 10 items being used.
+	 */
     uint16_t available() {
         return (write >= read) ? write - read : size - read + write;
     };
-
+    
+    /*
+     * retun the available item free space
+	 */
+    uint16_t freespace() {
+    	return size - available();
+	}
+	
     bool dequeue(T * c) {
         bool empty = isEmpty();
         if (!empty) {
