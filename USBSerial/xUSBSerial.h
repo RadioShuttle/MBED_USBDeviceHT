@@ -149,7 +149,7 @@ public:
      *
      * @param cb Callback to attach
      */
-    void attach(Callback<void()> &cb) {
+    void attach(Callback<void()> cb) {
         rx = cb;
     }
 
@@ -158,8 +158,8 @@ public:
      *
      * @param fptr function pointer
      */
-    void attach(void (*fptr)(int baud, int bits, int parity, int stop)) {
-        settingsChangedCodingCallback = fptr;
+	void attachCoding(Callback<void(int baud, int bits, int parity, int stop)> coding) {
+        settingsChangedCodingCallback = coding;
     }
 
     /**
@@ -167,9 +167,10 @@ public:
      *
      * @param fptr function pointer
      */
-    void attachState(void (*fptr)(bool dtr, bool rts)) {
-        settingsChangedStateCallback = fptr;
+    void attachState(Callback<void(bool, bool)> state) {
+    	settingsChangedStateCallback = state;
     }
+
 
 protected:
     virtual bool EPBULK_OUT_callback();
@@ -185,12 +186,11 @@ protected:
     }
 
 private:
-    Callback<void()> rx;
     CircBuffer<uint8_t,512> buf;
-    void (*settingsChangedCodingCallback)(int baud, int bits, int parity, int stop);
-    void (*settingsChangedStateCallback)(bool dtr, bool rts);
-    volatile bool _rx_in_progress;
-;
+    Callback<void()> rx;
+    Callback<void(bool, bool)> settingsChangedStateCallback;
+    Callback<void(int baud, int bits, int parity, int stop)> settingsChangedCodingCallback;
+	volatile bool _rx_in_progress;
 };
 
 #endif
