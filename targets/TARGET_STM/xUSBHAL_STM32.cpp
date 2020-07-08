@@ -1,5 +1,5 @@
 #include "mbed.h"
-#include "PinMap.h"
+#include "xPinMap.h"
 
 #ifdef FEATURE_USBSERIAL
 
